@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateCoffeeDto {
   @IsString()
@@ -9,5 +9,6 @@ export class CreateCoffeeDto {
   readonly brand: string;
 
   @IsString({ each: true })
+  @IsOptional()
   readonly flavors: string[];
 }

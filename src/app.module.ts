@@ -13,7 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       port: 5432,
       username: 'postgres',
       password: 'pass123',
-      database: 'postgres',
+      database: 'nest-coffees',
       // database = DB name
       autoLoadEntities: true,
       // helps load the modules automatically instead of specifying the entities array
