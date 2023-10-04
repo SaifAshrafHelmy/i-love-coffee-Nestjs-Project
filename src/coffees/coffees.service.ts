@@ -36,12 +36,14 @@ export class CoffeesService {
       id: Math.floor(Math.random() * 10000),
       ...createCoffeeDto,
     });
+    return createCoffeeDto;
   }
 
   update(id: string, updateCoffeeDto: UpdateCoffeeDto) {
     const existingCoffee = this.findOne(id);
     if (existingCoffee) {
       // update the existing entity
+      return updateCoffeeDto;
     }
   }
 

@@ -34,8 +34,9 @@ export class CoffeesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCoffeeDto: UpdateCoffeeDto) {
-    return this.coffeeService.update(id, updateCoffeeDto);
+  update(@Param('id') id: number, @Body() updateCoffeeDto: UpdateCoffeeDto) {
+    console.log(typeof id);
+    return this.coffeeService.update('' + id, updateCoffeeDto);
   }
 
   @Delete(':id')
