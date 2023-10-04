@@ -4,12 +4,15 @@ import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Flavor } from './entities/flavor.entity';
 
 @Injectable()
 export class CoffeesService {
   constructor(
     @InjectRepository(Coffee)
     private readonly coffeeRepository: Repository<Coffee>,
+    @InjectRepository(Flavor)
+    private readonly flavorRepository: Repository<Flavor>,
   ) {}
 
   async findAll() {
@@ -30,20 +33,32 @@ export class CoffeesService {
   }
 
   async create(createCoffeeDto: CreateCoffeeDto) {
-    const coffee = await this.coffeeRepository.create(createCoffeeDto);
+    const flavors = await this.preloadFlavorByName(createCoffeeDto.flavors);
+    const finalCoffee = { ...createCoffeeDto, flavors };
+    const coffee = await this.coffeeRepository.create(finalCoffee);
     return this.coffeeRepository.save(coffee);
   }
 
   async update(id: number, updateCoffeeDto: UpdateCoffeeDto) {
+    // if we update the flavors array, we get the flavors with result, and if we don't, we don't
+    let finalCoffee;
+    if (updateCoffeeDto.flavors) {
+      const flavors = await this.preloadFlavorByName(updateCoffeeDto.flavors);
+      finalCoffee = { ...updateCoffeeDto, flavors };
+    } else {
+      finalCoffee = updateCoffeeDto;
+    }
+
     const coffee = await this.coffeeRepository.preload({
       id,
-      ...updateCoffeeDto,
+      ...finalCoffee,
     });
     if (!coffee) {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
+    this.coffeeRepository.save(coffee);
 
-    return this.coffeeRepository.save(coffee);
+    return this.findOne(id);
   }
 
   async remove(id: number) {
@@ -52,5 +67,21 @@ export class CoffeesService {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
     return this.coffeeRepository.remove(coffee);
+  }
+
+  private async preloadFlavorByName(flavors: string[]) {
+    const flavorInstances = await Promise.all(
+      flavors.map(async (name) => {
+        const existingFlavor = await this.flavorRepository.findOne({
+          where: { name },
+        });
+        if (existingFlavor) {
+          return existingFlavor;
+        } else {
+          return this.flavorRepository.create({ name });
+        }
+      }),
+    );
+    return flavorInstances;
   }
 }
