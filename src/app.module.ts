@@ -3,25 +3,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoffeesModule } from './coffees/coffees.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { dataSourceOptions } from 'db/data-source';
 
 @Module({
-  imports: [
-    CoffeesModule,
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'pass123',
-      database: 'nest-coffees',
-      // database = DB name
-      autoLoadEntities: true,
-      // helps load the modules automatically instead of specifying the entities array
-      synchronize: true,
-      // To sync TypeORM entities with the database every time we run our app
-      // lets typeORM automatically generate the SQL table from all classes with the @Entity() decorator and the metadata they contain.
-    }),
-  ],
+  imports: [CoffeesModule, TypeOrmModule.forRoot(dataSourceOptions)],
   controllers: [AppController],
   providers: [AppService],
 })

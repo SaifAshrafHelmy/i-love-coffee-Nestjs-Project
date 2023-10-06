@@ -13,7 +13,7 @@ export class Coffee {
   id: number;
 
   @Column()
-  name: string;
+  title: string;
 
   @Column()
   brand: string;
@@ -23,4 +23,7 @@ export class Coffee {
     cascade: true,
   })
   flavors: Flavor[];
+
+  @Column({ default: 0 })
+  recommendations: number;
 }
