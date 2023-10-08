@@ -42,4 +42,9 @@ export class CoffeesController {
   remove(@Param('id') id: string) {
     return this.coffeeService.remove(id);
   }
+
+  @Get(':id/recommend')
+  recommend(@Param('id') id: string) {
+    return this.coffeeService.recommendCoffee(id);
+  }
 }
