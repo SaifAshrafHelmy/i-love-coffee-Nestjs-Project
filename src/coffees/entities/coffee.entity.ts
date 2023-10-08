@@ -9,7 +9,7 @@ The type HydratedDocument<entity> is a TypeScript type that represents a Mongoos
 
 @Schema()
 export class Coffee {
-  @Prop()
+  @Prop({ index: true })
   name: string;
 
   @Prop()
@@ -21,5 +21,8 @@ export class Coffee {
   @Prop({ default: 0 })
   recommendations: number;
 }
-
 export const CoffeeSchema = SchemaFactory.createForClass(Coffee);
+
+// for compound indexes:
+// 1 means ASC Order, -1 means DESC Order
+CoffeeSchema.index({ name: 1, brand: -1 });
