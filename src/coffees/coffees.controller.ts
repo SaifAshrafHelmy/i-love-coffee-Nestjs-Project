@@ -14,7 +14,7 @@ import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 
 @Controller('coffees')
 export class CoffeesController {
-  constructor(private readonly coffeeService: CoffeesService) {}
+   constructor(private readonly coffeeService: CoffeesService) {}
 
   @Get()
   // findAll(@Query() paginationQuery) {
@@ -34,13 +34,12 @@ export class CoffeesController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateCoffeeDto: UpdateCoffeeDto) {
-    console.log(typeof id);
+  update(@Param('id') id: string, @Body() updateCoffeeDto: UpdateCoffeeDto) {
     return this.coffeeService.update('' + id, updateCoffeeDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.coffeeService.remove(id);
-  }
+  } 
 }
