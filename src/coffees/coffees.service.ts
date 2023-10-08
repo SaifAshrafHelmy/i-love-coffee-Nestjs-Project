@@ -14,25 +14,19 @@ import { Event } from 'src/events/entities/event.entity/event.entity';
 @Injectable()
 export class CoffeesService {
   constructor(
-    @InjectModel(Coffee.name) private readonly coffeeModel: Model<Coffee>,
-    @InjectModel(Event.name) private readonly eventModel: Model<Event>,
+    @InjectModel(Coffee.name) private coffeeModel: Model<Coffee>,
     @InjectConnection() private readonly connection: Connection,
+    @InjectModel(Event.name) private readonly eventModel: Model<Event>,
   ) {}
 
-  private checkValidMongooseId(id: string): void {
-    const isValidId = mongoose.Types.ObjectId.isValid(id);
-    if (!isValidId) throw new NotFoundException('Invalid Object Id');
-  }
-
-  async findAll(
-    paginationQuery: PaginationQueryDto,
-  ): Promise<CoffeeDocument[]> {
+  async findAll(paginationQuery: PaginationQueryDto) {
     const { limit, offset } = paginationQuery;
     return await this.coffeeModel.find().skip(offset).limit(limit);
   }
 
-  async findOne(id: string): Promise<CoffeeDocument> {
-    this.checkValidMongooseId(id);
+  async findOne(id: string) {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId) throw new NotFoundException('Invalid Object Id');
 
     const coffee = await this.coffeeModel.findById(id);
     if (!coffee) {
@@ -41,16 +35,14 @@ export class CoffeesService {
     return coffee;
   }
 
-  async create(createCoffeeDto: CreateCoffeeDto): Promise<CoffeeDocument> {
+  async create(createCoffeeDto: CreateCoffeeDto) {
     const newCoffee = new this.coffeeModel(createCoffeeDto);
     return await newCoffee.save();
   }
 
-  async update(
-    id: string,
-    updateCoffeeDto: UpdateCoffeeDto,
-  ): Promise<CoffeeDocument> {
-    this.checkValidMongooseId(id);
+  async update(id: string, updateCoffeeDto: UpdateCoffeeDto) {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId) throw new NotFoundException('Invalid Object Id');
 
     const existingCoffee = await this.coffeeModel.findByIdAndUpdate(
       id,
@@ -64,7 +56,7 @@ export class CoffeesService {
     }
   }
 
-  async remove(id: string): Promise<string> {
+  async remove(id: string) {
     const existingCoffee = await this.coffeeModel.findByIdAndRemove(id);
     if (existingCoffee) {
       return 'Successfully Deleted';
@@ -72,37 +64,24 @@ export class CoffeesService {
       throw new NotFoundException(`Coffee #${id} not found`);
     }
   }
-
   async recommendCoffee(coffeeId: string) {
-    console.log("I'm in");
+    const session = await this.connection.startSession();
     const coffee = await this.findOne(coffeeId);
 
-    const session = await this.connection.startSession();
     session.startTransaction();
     try {
-      console.log('inside the try');
+      // update Coffee
       coffee.recommendations++;
-
-      // console.log(coffee);
-
-      const recommendEvent = await new this.eventModel({
+      coffee.save({ session });
+      // Update Event
+      const newEvent = new this.eventModel({
         type: 'coffee',
         name: 'recommend_coffee',
         payload: { coffeeId: coffeeId },
       });
+      newEvent.save({ session });
 
-      // console.log(recommendEvent);
-      // console.log(coffee);
-      console.log('at end of  the try');
-      // console.log(coffee);
-
-      // Validate the document before saving it
-      const validationErrors = recommendEvent.validateSync();
-
-      console.log('here it is: ', validationErrors);
-      await recommendEvent.save({ session });
-
-      await coffee.save({ session });
+      await session.commitTransaction();
     } catch (err) {
       await session.abortTransaction();
       throw new BadRequestException('failed to recommended coffee');

@@ -17,6 +17,7 @@ export class Coffee {
 
   @Prop([String])
   flavors: string[];
+
   @Prop({ default: 0 })
   recommendations: number;
 }

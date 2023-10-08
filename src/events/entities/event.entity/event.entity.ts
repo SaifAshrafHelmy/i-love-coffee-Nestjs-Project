@@ -13,4 +13,4 @@ export class Event {
   payload: Record<string, any>;
 }
 
-export const eventSchema = SchemaFactory.createForClass(Event);
+export const EventSchema = SchemaFactory.createForClass(Event);
