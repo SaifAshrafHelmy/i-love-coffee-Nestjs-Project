@@ -4,13 +4,15 @@ import { UpdateCoffeeDto } from './dto/update-coffee.dto';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto/pagination-query.dto';
 
 @Injectable()
 export class CoffeesService {
   constructor(@InjectModel(Coffee.name) private coffeeModel: Model<Coffee>) {}
 
-  async findAll() {
-    return await this.coffeeModel.find();
+  async findAll(paginationQuery: PaginationQueryDto) {
+    const {limit, offset} = paginationQuery;
+    return await this.coffeeModel.find().skip(offset).limit(limit);
   }
 
   async findOne(id: string) {
